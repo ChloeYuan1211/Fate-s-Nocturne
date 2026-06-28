@@ -438,7 +438,12 @@ function refreshStat() {
   document.getElementById("giftTotal").innerText = totalStat.Gift;
 }
 
-// 统计每张卡牌出现次数并渲染明细列表（修改布局：名称左，红色数量右）
+// 自然排序函数：数字优先，UNO-0 < UNO-1 < UNO-2 < UNO-9 < UNO-+2
+function naturalSortStr(a, b) {
+  return a.localeCompare(b, undefined, { numeric: true, sensitivity: "base" });
+}
+
+// 统计每张卡牌出现次数并渲染明细列表（新增自然排序）
 function renderCardDetail() {
   listR.innerHTML = "";
   listSR.innerHTML = "";
@@ -451,22 +456,58 @@ function renderCardDetail() {
     countMap[key] = (countMap[key] || 0) + 1;
   });
 
+  // 按类型分组
+  const group = { R:[], SR:[], SSR:[], Gift:[] };
   Object.entries(countMap).forEach(([key, count]) => {
     const [type, name] = key.split("|");
+    group[type].push({ name, count });
+  });
+
+  // 每组内部按卡牌名称自然升序排序
+  group.R.sort((x,y) => naturalSortStr(x.name, y.name));
+  group.SR.sort((x,y) => naturalSortStr(x.name, y.name));
+  group.SSR.sort((x,y) => naturalSortStr(x.name, y.name));
+  group.Gift.sort((x,y) => naturalSortStr(x.name, y.name));
+
+  // 渲染R卡
+  group.R.forEach(item => {
     const itemDiv = document.createElement("div");
     itemDiv.className = "detail-item";
-    // 左侧卡牌名，右侧红色加粗数量
     itemDiv.innerHTML = `
-      <span>${name}</span>
-      <span class="count-badge">×${count}</span>
+      <span>${item.name}</span>
+      <span class="count-badge">×${item.count}</span>
     `;
-
-    switch(type) {
-      case "R": listR.appendChild(itemDiv); break;
-      case "SR": listSR.appendChild(itemDiv); break;
-      case "SSR": listSSR.appendChild(itemDiv); break;
-      case "Gift": listGift.appendChild(itemDiv); break;
-    }
+    listR.appendChild(itemDiv);
+  });
+  // 渲染SR卡
+  group.SR.forEach(item => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "detail-item";
+    itemDiv.innerHTML = `
+      <span>${item.name}</span>
+      <span class="count-badge">×${item.count}</span>
+    `;
+    listSR.appendChild(itemDiv);
+  });
+  // 渲染SSR卡
+  group.SSR.forEach(item => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "detail-item";
+    itemDiv.innerHTML = `
+      <span>${item.name}</span>
+      <span class="count-badge">×${item.count}</span>
+    `;
+    listSSR.appendChild(itemDiv);
+  });
+  // 渲染周边
+  group.Gift.forEach(item => {
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "detail-item";
+    itemDiv.innerHTML = `
+      <span>${item.name}</span>
+      <span class="count-badge">×${item.count}</span>
+    `;
+    listGift.appendChild(itemDiv);
   });
 }
 
