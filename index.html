@@ -14,6 +14,7 @@
   --ssr-tag: #e6b145;
   --gift-tag: #e86666;
   --white: #ffffff;
+  --red-num: #e62c2c;
 }
 * {
   margin: 0;
@@ -80,10 +81,11 @@ body {
   border-bottom: 2px solid var(--light-pink);
 }
 /* 总览统计网格 */
-stat-wrap {
+.stat-wrap {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
   gap: 10px;
+  margin-bottom: 20px;
 }
 .stat-card {
   background: var(--light-pink);
@@ -97,6 +99,38 @@ stat-wrap {
   font-weight: bold;
   color: var(--dark-text);
   margin-top: 4px;
+}
+/* 卡牌明细区块 */
+.detail-block {
+  margin-bottom: 16px;
+}
+.detail-block h4 {
+  font-size: 15px;
+  color: var(--dark-text);
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.detail-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 7px;
+}
+.detail-item {
+  padding: 6px 8px;
+  border-radius: 8px;
+  background: #fcf0f1;
+  font-size: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+}
+.count-badge {
+  color: var(--red-num);
+  font-weight: bold;
+  font-size: 13px;
 }
 /* 抽卡录入区域 */
 .draw-num-select {
@@ -196,7 +230,7 @@ stat-wrap {
   <button class="tab-btn" data-tab="history">历史记录</button>
 </div>
 
-<!-- Tab1：数据总览 -->
+<!-- Tab1：数据总览（新增卡牌持有明细区域） -->
 <div class="tab-content show" id="overview">
   <h2 class="sub-title">全部抽卡数据汇总</h2>
   <div class="stat-wrap">
@@ -220,6 +254,28 @@ stat-wrap {
       周边奖品
       <span class="num" id="giftTotal">0</span>
     </div>
+  </div>
+
+  <h2 class="sub-title">卡牌持有明细（每张拥有数量）</h2>
+  <!-- R卡明细 -->
+  <div class="detail-block">
+    <h4><span class="tag tag-R">R</span> R类UNO卡牌</h4>
+    <div class="detail-list" id="listR"></div>
+  </div>
+  <!-- SR卡明细 -->
+  <div class="detail-block">
+    <h4><span class="tag tag-SR">SR</span> SR类卡牌</h4>
+    <div class="detail-list" id="listSR"></div>
+  </div>
+  <!-- SSR卡明细 -->
+  <div class="detail-block">
+    <h4><span class="tag tag-SSR">SSR</span> SSR卡牌</h4>
+    <div class="detail-list" id="listSSR"></div>
+  </div>
+  <!-- 周边明细 -->
+  <div class="detail-block">
+    <h4><span class="tag tag-Gift">Gift</span> 特殊周边奖池</h4>
+    <div class="detail-list" id="listGift"></div>
   </div>
 </div>
 
@@ -346,6 +402,12 @@ const submitBtn = document.getElementById("submitDraw");
 const historyTbody = document.getElementById("historyList");
 const clearAllBtn = document.getElementById("clearAll");
 
+// 明细容器
+const listR = document.getElementById("listR");
+const listSR = document.getElementById("listSR");
+const listSSR = document.getElementById("listSSR");
+const listGift = document.getElementById("listGift");
+
 // 生成卡牌下拉
 function createSelect() {
   const sel = document.createElement("select");
@@ -367,13 +429,45 @@ function refreshDrawInput() {
   for(let i=0; i<num; i++) inputWrap.appendChild(createSelect());
 }
 
-// 更新统计数字
+// 更新顶部总统计数字
 function refreshStat() {
   document.getElementById("totalDraw").innerText = totalStat.totalDraw;
   document.getElementById("rTotal").innerText = totalStat.R;
   document.getElementById("srTotal").innerText = totalStat.SR;
   document.getElementById("ssrTotal").innerText = totalStat.SSR;
   document.getElementById("giftTotal").innerText = totalStat.Gift;
+}
+
+// 统计每张卡牌出现次数并渲染明细列表（修改布局：名称左，红色数量右）
+function renderCardDetail() {
+  listR.innerHTML = "";
+  listSR.innerHTML = "";
+  listSSR.innerHTML = "";
+  listGift.innerHTML = "";
+
+  const countMap = {};
+  historyArr.forEach(item => {
+    const key = `${item.type}|${item.name}`;
+    countMap[key] = (countMap[key] || 0) + 1;
+  });
+
+  Object.entries(countMap).forEach(([key, count]) => {
+    const [type, name] = key.split("|");
+    const itemDiv = document.createElement("div");
+    itemDiv.className = "detail-item";
+    // 左侧卡牌名，右侧红色加粗数量
+    itemDiv.innerHTML = `
+      <span>${name}</span>
+      <span class="count-badge">×${count}</span>
+    `;
+
+    switch(type) {
+      case "R": listR.appendChild(itemDiv); break;
+      case "SR": listSR.appendChild(itemDiv); break;
+      case "SSR": listSSR.appendChild(itemDiv); break;
+      case "Gift": listGift.appendChild(itemDiv); break;
+    }
+  });
 }
 
 // 渲染历史表格
@@ -400,6 +494,7 @@ function renderHistory() {
       saveData();
       refreshStat();
       renderHistory();
+      renderCardDetail();
     }
   })
 }
@@ -423,6 +518,7 @@ submitBtn.onclick = function(){
   saveData();
   refreshStat();
   renderHistory();
+  renderCardDetail();
 }
 
 // 清空全部记录
@@ -433,6 +529,7 @@ clearAllBtn.onclick = function(){
   saveData();
   refreshStat();
   renderHistory();
+  renderCardDetail();
 }
 
 // 切换抽数刷新输入框
@@ -442,6 +539,7 @@ drawCountSel.addEventListener("change", refreshDrawInput);
 refreshDrawInput();
 refreshStat();
 renderHistory();
+renderCardDetail();
 </script>
 </body>
 </html>
