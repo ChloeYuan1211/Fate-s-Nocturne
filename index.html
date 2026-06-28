@@ -1,0 +1,448 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<title>命运夜曲 Fate’s Nocturne</title>
+<style>
+:root {
+  --bg-light: #f6f9e4;
+  --main-rose: #f4a9aa;
+  --dark-rose: #b85b5d;
+  --r-color: #7398d8;
+  --sr-color: #7ebd64;
+  --ssr-color: #e6b145;
+  --gift-color: #e86666;
+}
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: "Microsoft YaHei", sans-serif;
+  font-size: 14px;
+}
+body {
+  background-color: var(--bg-light);
+  padding: 12px;
+}
+/* 顶部标题横幅 */
+.page-header {
+  width: 100%;
+  background: linear-gradient(135deg, var(--main-rose), #f7c2c3);
+  border-radius: 12px;
+  padding: 14px;
+  text-align: center;
+  margin-bottom: 14px;
+}
+.page-header h1 {
+  color: var(--dark-rose);
+  font-size: 20px;
+  letter-spacing: 1px;
+}
+/* 主体自适应布局：电脑左右分栏，手机上下堆叠 */
+.main-wrap {
+  display: grid;
+  grid-template-columns: 320px 1fr;
+  gap: 16px;
+  max-width: 1300px;
+  margin: 0 auto;
+}
+@media screen and (max-width: 768px) {
+  .main-wrap {
+    grid-template-columns: 1fr;
+  }
+}
+/* 卡片通用样式 */
+.card-box {
+  background: #ffffff;
+  border-radius: 12px;
+  padding: 14px;
+  border-left: 4px solid var(--main-rose);
+  margin-bottom: 14px;
+}
+.card-box h3 {
+  color: var(--dark-rose);
+  margin-bottom: 12px;
+  font-size: 16px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+/* 统计面板网格 */
+.stat-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+@media screen and (max-width: 480px) {
+  .stat-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+}
+.stat-item {
+  background: var(--bg-light);
+  padding: 8px 4px;
+  border-radius: 8px;
+  text-align: center;
+}
+.stat-item span {
+  font-weight: bold;
+  font-size: 16px;
+  color: var(--dark-rose);
+  display: block;
+}
+/* 抽卡录入区域 */
+.draw-count-select {
+  width: 100%;
+  padding: 7px;
+  border: 1px solid var(--main-rose);
+  border-radius: 6px;
+  margin: 8px 0 12px;
+}
+.draw-input-grid {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+}
+.draw-input-grid select {
+  width: 100%;
+  padding: 6px;
+  border: 1px solid #ddd;
+  border-radius: 6px;
+}
+.btn-submit {
+  width: 100%;
+  padding: 9px;
+  border: none;
+  border-radius: 8px;
+  background: var(--main-rose);
+  color: white;
+  font-weight: bold;
+  cursor: pointer;
+}
+/* 历史流水区域 */
+.history-wrap {
+  background: #fff;
+  border-radius: 12px;
+  padding: 14px;
+}
+.history-top-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  gap:8px;
+}
+.history-top-bar h3 {
+  color: var(--dark-rose);
+  font-size: 16px;
+}
+.btn-clear-all {
+  padding: 6px 10px;
+  background: #e86666;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  white-space: nowrap;
+}
+/* 手机适配表格 */
+.history-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+}
+.history-table th {
+  background: var(--main-rose);
+  color: white;
+  padding: 8px 4px;
+  text-align: center;
+  font-size:12px;
+}
+.history-table td {
+  padding: 8px 3px;
+  text-align: center;
+  border-bottom: 1px solid #f8d7d8;
+  font-size:12px;
+}
+.history-table tr:nth-child(even) {
+  background: var(--bg-light);
+}
+/* 稀有度彩色小标签 */
+.tag-R {
+  background: var(--r-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.tag-SR {
+  background: var(--sr-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.tag-SSR {
+  background: var(--ssr-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.tag-Gift {
+  background: var(--gift-color);
+  color: white;
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 11px;
+}
+.btn-del-single {
+  padding: 3px 6px;
+  border: none;
+  background: #f7c2c3;
+  border-radius: 4px;
+  cursor: pointer;
+  color: var(--dark-rose);
+  font-size:12px;
+}
+</style>
+</head>
+<body>
+<div class="page-header">
+  <h1>命运夜曲 Fate’s Nocturne</h1>
+</div>
+
+<div class="main-wrap">
+  <!-- 左侧：统计+抽卡录入 -->
+  <div class="left-col">
+    <div class="card-box">
+      <h3>📊 抽卡总统计</h3>
+      <div class="stat-grid">
+        <div class="stat-item">总抽数<span id="totalDraw">0</span></div>
+        <div class="stat-item">R卡<span id="rTotal">0</span></div>
+        <div class="stat-item">SR卡<span id="srTotal">0</span></div>
+        <div class="stat-item">SSR卡<span id="ssrTotal">0</span></div>
+        <div class="stat-item">周边奖品<span id="giftTotal">0</span></div>
+      </div>
+    </div>
+
+    <div class="card-box">
+      <h3>✍ 录入本次抽卡记录</h3>
+      <label>抽取数量（1~10抽）</label>
+      <select id="drawCount" class="draw-count-select">
+        <option value="1">1抽</option>
+        <option value="2">2抽</option>
+        <option value="3">3抽</option>
+        <option value="4">4抽</option>
+        <option value="5">5抽</option>
+        <option value="6">6抽</option>
+        <option value="7">7抽</option>
+        <option value="8">8抽</option>
+        <option value="9">9抽</option>
+        <option value="10">10抽</option>
+      </select>
+      <div id="drawInputWrap" class="draw-input-grid"></div>
+      <button class="btn-submit" id="submitDraw">保存本次记录</button>
+    </div>
+  </div>
+
+  <!-- 右侧：历史流水 -->
+  <div class="right-col">
+    <div class="history-wrap">
+      <div class="history-top-bar">
+        <h3>📜 全部抽卡历史</h3>
+        <button class="btn-clear-all" id="clearAll">清空全部</button>
+      </div>
+      <table class="history-table">
+        <thead>
+          <tr>
+            <th>抽取时间</th>
+            <th>稀有分类</th>
+            <th>卡牌/周边名称</th>
+            <th>操作</th>
+          </tr>
+        </thead>
+        <tbody id="historyList"></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+// 完整卡牌&奖池清单（按你给的内容完整录入）
+const cardData = {
+  R: [
+    "UNO-0",
+    "UNO-1",
+    "UNO-2",
+    "UNO-3",
+    "UNO-4",
+    "UNO-5",
+    "UNO-6",
+    "UNO-7",
+    "UNO-8",
+    "UNO-9",
+    "UNO-+2",
+    "UNO - 转向",
+    "UNO - 禁止"
+  ],
+  SR: [
+    "UNO-+4",
+    "UNO - 转色",
+    "实物 - 镭射超能力卡",
+    "实物 - 烫金超能力卡",
+    "实物 - 镭射解脱卡",
+    "实物 - 烫色解脱卡",
+    "实物 - 镭射相遇卡",
+    "实物 - 烫色相遇卡"
+  ],
+  SSR: [
+    "重工明信片"
+  ],
+  Gift: [
+    "【特殊奖池-官周】官周生娃",
+    "【特殊奖池-官周】生周",
+    "【特殊奖池-官周】荣耀之战线上",
+    "【特殊奖池-官周】奔跑四",
+    "【特殊奖池-组周】啵浪",
+    "【特殊奖池-组周】啵唧啵咪",
+    "【特殊奖池-组周】冰霸杯",
+    "【特殊奖池-组周】粉帽",
+    "【特殊奖池-组周】魔改棒",
+    "【特殊奖池-组周】头灯",
+    "【特殊奖池-其它】iPad 11 A16",
+    "【特殊奖池-其它】大疆Pocket4",
+    "【特殊奖池-其它】mini12拍立得",
+    "【特殊奖池-其它】雅诗兰黛护肤六件套",
+    "【特殊奖池-其它】金片",
+    "【特殊奖池-其它】京东1000元代金实体卡",
+    "【特殊奖池-其它】杨博文同款-潘多拉艾莎戒指",
+    "【特殊奖池-其它】杨博文同款-潘多拉项链",
+    "【特殊奖池-其它】杨博文同款-敲敲快乐"
+  ]
+};
+
+// 独立本地存储key，不和孟孟工具数据冲突
+const STORAGE_TOTAL = "yangbowen_fate_total";
+const STORAGE_HISTORY = "yangbowen_fate_history";
+
+// 初始化本地存储数据
+let totalStat = JSON.parse(localStorage.getItem(STORAGE_TOTAL)) || {
+  totalDraw:0, R:0, SR:0, SSR:0, Gift:0
+};
+let historyArr = JSON.parse(localStorage.getItem(STORAGE_HISTORY)) || [];
+
+// DOM节点绑定
+const drawCountSel = document.getElementById("drawCount");
+const inputWrap = document.getElementById("drawInputWrap");
+const submitBtn = document.getElementById("submitDraw");
+const historyTbody = document.getElementById("historyList");
+const clearAllBtn = document.getElementById("clearAll");
+
+// 生成卡牌下拉选择框
+function createCardSelect() {
+  const sel = document.createElement("select");
+  Object.keys(cardData).forEach(type => {
+    cardData[type].forEach(name => {
+      const opt = document.createElement("option");
+      opt.value = JSON.stringify({type, name});
+      opt.textContent = `[${type}] ${name}`;
+      sel.appendChild(opt);
+    })
+  })
+  return sel;
+}
+
+// 根据选择抽数渲染对应输入框
+function refreshInputArea() {
+  inputWrap.innerHTML = "";
+  const num = Number(drawCountSel.value);
+  for(let i=0; i<num; i++) {
+    inputWrap.appendChild(createCardSelect());
+  }
+}
+
+// 更新顶部统计数字面板
+function updateStatPanel() {
+  document.getElementById("totalDraw").innerText = totalStat.totalDraw;
+  document.getElementById("rTotal").innerText = totalStat.R;
+  document.getElementById("srTotal").innerText = totalStat.SR;
+  document.getElementById("ssrTotal").innerText = totalStat.SSR;
+  document.getElementById("giftTotal").innerText = totalStat.Gift;
+}
+
+// 渲染历史流水表格
+function renderHistoryTable() {
+  historyTbody.innerHTML = "";
+  historyArr.forEach((item, idx) => {
+    const tr = document.createElement("tr");
+    const tagClass = `tag-${item.type}`;
+    tr.innerHTML = `
+      <td>${item.time}</td>
+      <td><span class="${tagClass}">${item.type}</span></td>
+      <td>${item.name}</td>
+      <td><button class="btn-del-single" data-index="${idx}">删</button></td>
+    `;
+    historyTbody.appendChild(tr);
+  })
+  // 单条删除记录绑定事件
+  document.querySelectorAll(".btn-del-single").forEach(btn => {
+    btn.onclick = function() {
+      const idx = Number(this.dataset.index);
+      const delItem = historyArr[idx];
+      totalStat[delItem.type] -= 1;
+      totalStat.totalDraw -= 1;
+      historyArr.splice(idx, 1);
+      saveLocalData();
+      updateStatPanel();
+      renderHistoryTable();
+    }
+  })
+}
+
+// 保存数据到浏览器本地存储
+function saveLocalData() {
+  localStorage.setItem(STORAGE_TOTAL, JSON.stringify(totalStat));
+  localStorage.setItem(STORAGE_HISTORY, JSON.stringify(historyArr));
+}
+
+// 提交抽卡记录（已移除alert弹窗）
+submitBtn.onclick = function() {
+  const selects = inputWrap.querySelectorAll("select");
+  const nowTime = new Date().toLocaleString();
+  selects.forEach(sel => {
+    const data = JSON.parse(sel.value);
+    totalStat.totalDraw += 1;
+    totalStat[data.type] += 1;
+    historyArr.unshift({
+      time: nowTime,
+      type: data.type,
+      name: data.name
+    })
+  })
+  saveLocalData();
+  updateStatPanel();
+  renderHistoryTable();
+}
+
+// 一键清空全部记录
+clearAllBtn.onclick = function() {
+  if(!confirm("确定清空所有抽卡统计和历史记录？删除后无法恢复！")) return;
+  totalStat = {totalDraw:0,R:0,SR:0,SSR:0,Gift:0};
+  historyArr = [];
+  saveLocalData();
+  updateStatPanel();
+  renderHistoryTable();
+}
+
+// 切换抽数时自动刷新输入框
+drawCountSel.addEventListener("change", refreshInputArea);
+
+// 页面初始化加载
+refreshInputArea();
+updateStatPanel();
+renderHistoryTable();
+</script>
+</body>
+</html>
